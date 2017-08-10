@@ -2,6 +2,8 @@ package team2791;
 
 import java.util.Scanner;
 
+import org.usfirst.frc.team2791.swerve.SwerveHelper;
+
 /**
  * A simple class to quickly test the Swerve math.
  * Represents the Joystick Values with doubles recieved from the scanner
@@ -59,13 +61,19 @@ public class Test {
 	 *  ... i'm lazy and just want to know if the math works 0:)
 	 */
 	public static void getSwerveMath(double rightX, double leftX, double leftY, double gyro){
+		
 
 		double forward = leftY;
 		double strafe = leftX;
 		double rotate = rightX;		
 		double gyroAngle = Math.toRadians(gyro);
 		
-		if(gyroAngle != -2791){
+		if(gyroAngle == -2791){
+			SwerveHelper.setToBotCentric();
+			SwerveHelper.calculate(forward, strafe, rotate);
+		}
+		
+		else if (gyroAngle != -2791){ //if testing field centricity, then because there's no gyro, that has to be done locally
 			double temp = forward * Math.cos(gyroAngle) + strafe*Math.sin(gyroAngle);
 			strafe = -forward*Math.sin(gyroAngle) + strafe*Math.cos(gyroAngle);
 			forward = temp;

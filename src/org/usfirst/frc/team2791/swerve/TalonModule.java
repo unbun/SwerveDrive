@@ -1,7 +1,6 @@
 package org.usfirst.frc.team2791.swerve;
 
 
-import org.usfirst.frc.team2791.util.BasicPID;
 import org.usfirst.frc.team2791.util.ShakerGamepad;
 
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
@@ -16,20 +15,22 @@ import edu.wpi.first.wpilibj.Timer;
  * both rotation and speed</br>
  * The rotation speed controller has a PIDController with an potentiometer source. 
  * <i>(TODO: setup an option to use absolute encoders)</i></br>
+ * <i>(TODO: test rotation PID)</i></br>
  * 
  * @author created by Unnas Hussain on 8/2/2017
  */
 public class TalonModule{
 		
-	public int wheelTag;
+	public WheelTag wheelTag;
 	
 	private Talon rotation; //if you aren't using CTRE Talons and are having calibrations, try using the PWMSpeedController object instead
 	private Talon wheel; //if you aren't using CTRE Talons and are having calibrations, try using the PWMSpeedController object instead
 
-	private BasicPID rotationPID;
+	private PIDController rotationPID;
 	public double rotateP = 1.0;
 	public double rotateI = 0.0;
 	public double rotateD = 0.0;
+	private double rotatePIDTolerance = 0.01; // i believe that this is in degrees, but if not, may need adjusting
 
 	private AnalogPotentiometer absoluteAngleEncoder;
 	private Encoder speedEncoder = null;
@@ -38,44 +39,42 @@ public class TalonModule{
 	private double previousTime = 0;
 	private double filteredAccel = 0;
 
-	/**
-	 * 
-	 * location determines which module is which
-	 * @param location 0 = front right / 1 = front left / 2 = back left / 3 = back right
-	 */
-	public TalonModule(int rotationPort, int wheelPort, int potentiometerPort, int location){
+	public TalonModule(int rotationPort, int wheelPort, int potentiometerPort, WheelTag location){
 		wheelTag = location;
 		
 		rotation = new Talon(rotationPort);
 		wheel = new Talon(wheelPort);
 		absoluteAngleEncoder = new AnalogPotentiometer(potentiometerPort, 360.0, 0);
 
-		rotationPID = new BasicPID(rotateP, rotateI, rotateD);
+		rotationPID = new PIDController(rotateP, rotateI, rotateD, absoluteAngleEncoder, rotation);
 		
+		rotationPID.setContinuous();
+		rotationPID.setAbsoluteTolerance(rotatePIDTolerance);
 	}
 	
-	/**
-	 * 
-	 * location determines which module is which
-	 * @param location 0 = front right / 1 = front left / 2 = back left / 3 = back right
-	 */
-	public TalonModule(int rotationPort, int wheelPort, int encoderPort, int wheelEncoderA, int wheelEncoderB, int location){
+	public TalonModule(int rotationPort, int wheelPort, int encoderPort, int wheelEncoderA, int wheelEncoderB, WheelTag location){
 		this(rotationPort, wheelPort, encoderPort, location);
 		speedEncoder = new Encoder(wheelEncoderA, wheelEncoderB);
 	}
 
 	public void setSpeedAndAngle(Joystick drive, Joystick rotate){
-		wheel.set(SwerveHelper.getSpeedValue(drive, rotate, wheelTag));
-		rotationPID.updateAndGetOutput(SwerveHelper.getAngleValue(drive, rotate, wheelTag));
+		wheel.set(SwerveHelper.getSpeedValue(drive, rotate, wheelTag.wheelNumber));
+		rotationPID.setSetpoint(SwerveHelper.getAngleValue(drive, rotate, wheelTag.wheelNumber));
 	}
 	
 	public void setSpeedAndAngle(ShakerGamepad driver){
-		wheel.set(SwerveHelper.getSpeedValue(driver, wheelTag));
-		rotationPID.updateAndGetOutput(SwerveHelper.getAngleValue(driver, wheelTag));
+		wheel.set(SwerveHelper.getSpeedValue(driver, wheelTag.wheelNumber));
+		rotationPID.setSetpoint(SwerveHelper.getAngleValue(driver, wheelTag.wheelNumber));
 	}
 
 	//*********************PID Helper Methods******************//
+	public void setRotationPID(double kp, double ki, double kd){
+		rotationPID.setPID(kp, ki, kd);
+	}
 
+	public void setRotationPID(double kp, double ki, double kd, double kf){
+		rotationPID.setPID(kp, ki, kd, kf);
+	}
 
 	public void resetSpeedEncoder(){
 		if(speedEncoder != null)
@@ -114,6 +113,16 @@ public class TalonModule{
 
 		return filteredAccel;
 	}	
+	
+	public enum WheelTag{
+		FRONT_RIGHT(0), FRONT_LEFT(1), BACK_LEFT(2), BACK_RIGHT(3);
+		
+		public int wheelNumber;
+		
+		WheelTag(int id){
+			wheelNumber = id;
+		}
+	}
 
 
 }
