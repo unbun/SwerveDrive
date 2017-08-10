@@ -16,13 +16,14 @@ In your Drivetrain subsystem, initalize 4 TalonModules with the PWM ports for ea
 
 ```java
 TalonModule wheel1 =  new TalonModule(rotationTalonPort, speedTalonPort,
-potentiometerPort, WheelTag.FRONT_RIGHT);
+  potentiometerPort, WheelTag.FRONT_RIGHT);
 ```
 
 You can also add a encoders on the wheel axles:
 
 ```java
-TalonModule wheel1 =  new TalonModule( rotationTalonPort, speedTalonPort, potentiometerPort, wheelEncoderA, wheelEncoderB, WheelTag.FRONT_RIGHT);
+TalonModule wheel1 =  new TalonModule( rotationTalonPort, speedTalonPort, 
+  potentiometerPort, wheelEncoderA, wheelEncoderB, WheelTag.FRONT_RIGHT);
 
 //OR
 
@@ -35,7 +36,7 @@ You can also add the encoders with the constructor
 
 ### Step 2: Configure your SwerveHelper.
 
-#### 2a) Send your drivetrain's gyro to Swervehelper (neccessary if you want field centricty.. Additionally, setting a non-null gyor will automatically set the helper to field-centric)
+#### 2a) Send your drivetrain's gyro to Swervehelper (neccessary if you want field centricty. <i>Note:</i> setting a non-null gyro will automatically set the helper to field-centric)
 
 ```java
 SwerveHelper.setGyro(drivetrain.getGyro());
@@ -48,16 +49,17 @@ SwerveHelper.setReversingToRotation();
 //OR
 SwerveHelper.setReversingToSpeed();
 ```
+
 </br>
+
 ```java
 SwerveHelper.setToBotCentric();
 //OR
 SwerveHelper.setToFieldCentric();
-
 ```
 
 
-###Step 3: Make the wheels spin and drive and stuff
+### Step 3: Make the wheels spin and drive and stuff
 
 In your main drivetrain run loop (or your default driving command execute for Command-Based) set each Module's speed and angle, sending the joysticks 
 
