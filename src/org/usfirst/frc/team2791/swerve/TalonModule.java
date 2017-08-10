@@ -66,6 +66,10 @@ public class TalonModule{
 		wheel.set(SwerveHelper.getSpeedValue(driver, wheelTag.wheelNumber));
 		rotationPID.setSetpoint(SwerveHelper.getAngleValue(driver, wheelTag.wheelNumber));
 	}
+	
+	public void setEncoder(int encoderPortA, int encoderPortB){
+		this.speedEncoder = new Encoder(encoderPortA, encoderPortB);
+	}
 
 	//*********************PID Helper Methods******************//
 	public void setRotationPID(double kp, double ki, double kd){
@@ -76,6 +80,22 @@ public class TalonModule{
 		rotationPID.setPID(kp, ki, kd, kf);
 	}
 
+	public double getRotationP(){
+		return rotationPID.getP();
+	}
+	
+	public double getRotationI(){
+		return rotationPID.getI();
+	}
+	
+	public double getRotationD(){
+		return rotationPID.getD();
+	}
+	
+	public double getRotationF(){
+		return rotationPID.getF();
+	}
+	
 	public void resetSpeedEncoder(){
 		if(speedEncoder != null)
 			this.speedEncoder.reset();
