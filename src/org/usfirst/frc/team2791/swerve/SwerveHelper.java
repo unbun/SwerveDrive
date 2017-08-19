@@ -7,7 +7,8 @@ import edu.wpi.first.wpilibj.Joystick;
 
 /**
  * Calculates the angle and speed of each 4 wheels based
- * on the input from two 2-axis joysticks
+ * on the input from two 2-axis joysticks.</br>
+ * Kinematics from <a href = https://www.chiefdelphi.com/media/papers/2426)> Ether</a>
  * 
  * @author created by Unnas Hussain on 8/2/2017
  */
@@ -17,12 +18,20 @@ public class SwerveHelper {
 	public final static double WHEELBASE_WIDTH = 28.0/12.0;
 
 	/*
+	 * Math Conventions:
+	 * 
+	 * 
 	 * Wheel ID Numbers:
-	 * wheel 0 = front_right;
-	 * wheel 1 = front_left;
-	 * wheel 2 = rear_left;
-	 * wheel 3 = rear_right;
+	 * 0 = front_right;
+	 * 1 = front_left;
+	 * 2 = rear_left;
+	 * 3 = rear_right;
+	 * 
+	 * Zero degrees is the wheels facing forward
+	 * 
 	 */
+	
+	
 	protected static double[] wheelSpeed = new double[4];
 	protected static double[] wheelAngle = new double[4];
 
@@ -42,7 +51,7 @@ public class SwerveHelper {
 		calculate(drive.getY(), drive.getX(), rotate.getX());
 		return wheelAngle[wheelID];
 	}	
-	
+
 	public static double getSpeedValue(ShakerGamepad input, int wheelID){
 		calculate(input.getSwerveDriveSpeed(), input.getSwerveDriveStrafe(), input.getSwerveDriveRotation());
 		return wheelSpeed[wheelID];
@@ -52,7 +61,7 @@ public class SwerveHelper {
 		calculate(input.getSwerveDriveSpeed(), input.getSwerveDriveStrafe(), input.getSwerveDriveRotation());
 		return wheelAngle[wheelID];
 	}	
-	
+
 	public static void calculate(double forward, double strafe, double rotate){
 
 		if(fieldCentric && getGyro() != null){
@@ -61,6 +70,8 @@ public class SwerveHelper {
 			double temp = forward * Math.cos(gyroAngle) + strafe*Math.sin(gyroAngle);
 			strafe = -forward*Math.sin(gyroAngle) + strafe*Math.cos(gyroAngle);
 			forward = temp;
+		}else if (fieldCentric && getGyro() == null) {
+			System.out.println ("No Gyro found, Swerve calculations will be Robot Centric");
 		}
 
 		/*
@@ -81,7 +92,7 @@ public class SwerveHelper {
 		wheelSpeed[3] = Math.sqrt((Math.pow(frontRightX,2) + Math.pow(backLeftX,2)));
 		normalizeSpeeds();
 
-	    wheelAngle[0] = Math.atan2(frontRightY, backLeftX) * 180/Math.PI;
+		wheelAngle[0] = Math.atan2(frontRightY, backLeftX) * 180/Math.PI;
 		wheelAngle[1] = Math.atan2(frontRightY, backLeftY) * 180/Math.PI;
 		wheelAngle[2] = Math.atan2(frontRightX, backLeftY) * 180/Math.PI;
 		wheelAngle[3] = Math.atan2(frontRightX, backLeftX) * 180/Math.PI;
@@ -91,13 +102,15 @@ public class SwerveHelper {
 
 	}
 
+	/**
+	 * The kinematics create backwards vectors by rotating the wheels and always driving in a positive direction,
+	 * (So going backwards would be Speed == 1.0, Angle == 180) </br>
+	 * 
+	 * If the vehicle design is such that it would better to avoid rotating the modules,
+	 * use this method after the kinematics are done.
+	 * (Then going backwards will be Speed ==-1.0, Angle == 0)
+	 */
 	private static void reverseWithSpeed(){
-		/*
-		 * The kinematics create backwards vectors by rotating,
-		 * so the speed of a wheel is never negative. </br>
-		 * If the vehicle design is such that it would better to avoid rotating,
-		 * use this method after the kinematics are done.
-		 */
 		double temp_wheelAngle[] = wheelAngle;
 
 		if(temp_wheelAngle[0] > 90.0 || temp_wheelAngle[0] < -90.0){
@@ -122,8 +135,8 @@ public class SwerveHelper {
 	}
 
 
+	/**Normalize speeds to be in a range from 0 to +1.0*/
 	private static void normalizeSpeeds(){
-		//Normalize speeds to be in a range from 0 to +1;
 		double max = Math.max(wheelSpeed[0], wheelSpeed[1]);
 		max = Math.max(max, wheelSpeed[2]);
 		max = Math.max(max, wheelSpeed[3]);
@@ -139,15 +152,28 @@ public class SwerveHelper {
 	public static void setToFieldCentric(){
 		fieldCentric = true;
 	}
-	
+
 	public static void setToBotCentric(){
 		fieldCentric = false;
 	}
 
+	
+	/**
+	 * Reversing with Rotation means that when you go backwards,
+	 * the speed will be in a positive direction but the angle will spin.
+	 * This means that the speed is never negative </br>
+	 * (So going backwards would be Speed == 1.0 , Angle == 180)
+	 */
 	public static void setReversingToRotation(){
 		useAngleToReverse = true;
 	}
 
+	/**
+	 * Reversing with Speed means that when you go backwards,
+	 * the speed will be in a negative direction and there will be less rotation.
+	 * This means that the angle is never outside the range -90 deg to 90 deg </br>
+	 * (So going backwards would be Speed == -1.0 , Angle == 0)
+	 */
 	public static void setReversingToSpeed(){
 		useAngleToReverse = false;
 	}

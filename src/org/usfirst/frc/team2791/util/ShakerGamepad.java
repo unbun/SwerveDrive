@@ -60,6 +60,7 @@ public class ShakerGamepad extends Joystick {
 	}
 
 	//*****************Swerve Drive Methods*********************
+	//These are required in any Gampepad Class that you choose to use if you don't want to use ShakerGamepad
 
 
 	/*

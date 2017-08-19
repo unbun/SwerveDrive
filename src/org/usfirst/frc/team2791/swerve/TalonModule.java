@@ -14,23 +14,22 @@ import edu.wpi.first.wpilibj.Timer;
  * A TalonModule allows you to easily control the speed controllers for 
  * both rotation and speed</br>
  * The rotation speed controller has a PIDController with an potentiometer source. 
- * <i>(TODO: setup an option to use absolute encoders)</i></br>
- * <i>(TODO: test rotation PID)</i></br>
+ * <i>(TODO: setup an option to use absolute encoders in place of rotation potentiometers)</i></br>
  * 
  * @author created by Unnas Hussain on 8/2/2017
  */
 public class TalonModule{
 		
-	public WheelTag wheelTag;
+	public WheelPosition wheelTag;
 	
-	private Talon rotation; //if you aren't using CTRE Talons and are having calibrations, try using the PWMSpeedController object instead
-	private Talon wheel; //if you aren't using CTRE Talons and are having calibrations, try using the PWMSpeedController object instead
+	private Talon rotation; //if you aren't using CTRE Talons and are having calibration issues, try using the PWMSpeedController object instead
+	private Talon wheel; //if you aren't using CTRE Talons and are having calibration issues, try using the PWMSpeedController object instead
 
 	private PIDController rotationPID;
 	public double rotateP = 1.0;
 	public double rotateI = 0.0;
 	public double rotateD = 0.0;
-	private double rotatePIDTolerance = 0.01; // i believe that this is in degrees, but if not, may need adjusting
+	private double rotatePIDTolerance = 0.01;
 
 	private AnalogPotentiometer absoluteAngleEncoder;
 	private Encoder speedEncoder = null;
@@ -39,7 +38,7 @@ public class TalonModule{
 	private double previousTime = 0;
 	private double filteredAccel = 0;
 
-	public TalonModule(int rotationPort, int wheelPort, int potentiometerPort, WheelTag location){
+	public TalonModule(int rotationPort, int wheelPort, int potentiometerPort, WheelPosition location){
 		wheelTag = location;
 		
 		rotation = new Talon(rotationPort);
@@ -52,7 +51,7 @@ public class TalonModule{
 		rotationPID.setAbsoluteTolerance(rotatePIDTolerance);
 	}
 	
-	public TalonModule(int rotationPort, int wheelPort, int encoderPort, int wheelEncoderA, int wheelEncoderB, WheelTag location){
+	public TalonModule(int rotationPort, int wheelPort, int encoderPort, int wheelEncoderA, int wheelEncoderB, WheelPosition location){
 		this(rotationPort, wheelPort, encoderPort, location);
 		speedEncoder = new Encoder(wheelEncoderA, wheelEncoderB);
 	}
@@ -62,6 +61,14 @@ public class TalonModule{
 		rotationPID.setSetpoint(SwerveHelper.getAngleValue(drive, rotate, wheelTag.wheelNumber));
 	}
 	
+	/**
+	 * If you have your own class for joystick Controllers, then just change the parameter type to your class.</br>
+	 * <i>However your controller will need to have the following methods from ShakerGamepad: <b>ShakerGamepad.getSwerveDriveSpeed(),
+	 * ShakerGamepad.getSwerveDriveStrafe(), and get SwerveDriveRotation() </b></i>
+	 * 
+	 * 
+	 * @param driver the gamepad controller for the driver.
+	 */
 	public void setSpeedAndAngle(ShakerGamepad driver){
 		wheel.set(SwerveHelper.getSpeedValue(driver, wheelTag.wheelNumber));
 		rotationPID.setSetpoint(SwerveHelper.getAngleValue(driver, wheelTag.wheelNumber));
@@ -72,6 +79,11 @@ public class TalonModule{
 	}
 
 	//*********************PID Helper Methods******************//
+	
+	public void setRotationPIDTolerance(double tolerance) {
+		rotatePIDTolerance = tolerance;
+		rotationPID.setAbsoluteTolerance(tolerance);
+	}
 	public void setRotationPID(double kp, double ki, double kd){
 		rotationPID.setPID(kp, ki, kd);
 	}
@@ -100,6 +112,7 @@ public class TalonModule{
 		if(speedEncoder != null)
 			this.speedEncoder.reset();
 	}
+	
 	//************** Pos/Vel/Acc Helper Methods **************// 
 	
 	public double getAngle(){
@@ -129,17 +142,17 @@ public class TalonModule{
 		previousRate = currentRate;
 		previousTime = currentTime;
 
-		filteredAccel = acceleration * 0.5 + filteredAccel * 0.5; //dampens random spikes due to derivations
+		filteredAccel = acceleration * 0.5 + filteredAccel * 0.5; //dampens random spikes due to the fact that we are deriving this value
 
 		return filteredAccel;
 	}	
 	
-	public enum WheelTag{
+	public enum WheelPosition{
 		FRONT_RIGHT(0), FRONT_LEFT(1), BACK_LEFT(2), BACK_RIGHT(3);
 		
 		public int wheelNumber;
 		
-		WheelTag(int id){
+		WheelPosition(int id){
 			wheelNumber = id;
 		}
 	}
