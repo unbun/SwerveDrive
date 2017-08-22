@@ -2,9 +2,9 @@
 
 A simple swerve drive controller for 4 wheel holonomic FRC robots. This was written for FRC 2791. 
 
-This uses FRC2791's custom two 2-axis Joystick Class (ShakerGamepad.java) as controllers.
+This library includes functionality with FRC 2791's custom two 2-axis Joystick Class (ShakerGamepad.java) as controllers.
 
-This was designed to be dropped into whatever structure your team is comfortable using, which is why it's just a helper, not a full drivetrain subsystem. 
+This was designed to be dropped into whatever structure your team is comfortable using, which is why it's just a helper, not a full drivetrain object. 
 
 
 ## How to use:
@@ -12,18 +12,18 @@ This was designed to be dropped into whatever structure your team is comfortable
 
 ### Step 1: Create a Drivetrain with TalonModules
 
-In your Drivetrain subsystem, initalize 4 TalonModules with the PWM ports for each motor, the rotation encoder, and which wheel you are creating (<i>FRONT_RIGHT,FRONT_LEFT,BACK_LEFT,BACK_RIGHT</i>). 
+In your Drivetrain subsystem, initalize 4 TalonModules (kind of like you were initializing 4 regular Talons/Speed Controllers) with the PWM ports for each motor, the rotation encoder, and which wheel you are creating (<i>FRONT_RIGHT,FRONT_LEFT,BACK_LEFT,BACK_RIGHT</i>). 
 
 ```java
 TalonModule wheel1 =  new TalonModule(rotationTalonPort, speedTalonPort,
-  potentiometerPort, WheelTag.FRONT_RIGHT);
+  potentiometerPort, WheelPosition.FRONT_RIGHT);
 ```
 
 You can also add an encoder for wheels:
 
 ```java
 TalonModule wheel1 =  new TalonModule(rotationTalonPort, speedTalonPort, 
-  rotationPotentiometerPort, speedEncoderPortA, speedEncoderPortB, WheelTag.FRONT_RIGHT);
+  rotationPotentiometerPort, speedEncoderPortA, speedEncoderPortB, WheelPosition.FRONT_RIGHT);
 
 //OR
 
@@ -59,7 +59,7 @@ SwerveHelper.setToFieldCentric();
 
 ### Step 3: Make the wheels spin and drive and stuff
 
-In your main drivetrain run loop (or your default driving Command's execute() for Command-Based) set each Module's speed and angle by sending your joystick objects
+In your main drivetrain run loop (or your default driving Command's execute() for Command-Based) set each TalonModule's speed and angle by sending your joystick objects. 
 
 
 ```java
