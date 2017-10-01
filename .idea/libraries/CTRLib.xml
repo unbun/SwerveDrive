@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="CTRLib">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/wpilib/user/java/lib/CTRLib.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -31,7 +31,7 @@ public class TalonModule{
 	public double rotateD = 0.0;
 	private double rotatePIDTolerance = 0.01;
 
-	private AnalogPotentiometer absoluteAngleEncoder;
+	private AnalogPotentiometer rotationEncoder = null;
 	private Encoder speedEncoder = null;
 
 	private double previousRate = 0;
@@ -43,9 +43,9 @@ public class TalonModule{
 		
 		rotation = new Talon(rotationPort);
 		wheel = new Talon(wheelPort);
-		absoluteAngleEncoder = new AnalogPotentiometer(potentiometerPort, 360.0, 0);
+		rotationEncoder = new AnalogPotentiometer(potentiometerPort, 360.0, 0);
 
-		rotationPID = new PIDController(rotateP, rotateI, rotateD, absoluteAngleEncoder, rotation);
+		rotationPID = new PIDController(rotateP, rotateI, rotateD, rotationEncoder, rotation);
 		
 		rotationPID.setContinuous();
 		rotationPID.setAbsoluteTolerance(rotatePIDTolerance);
@@ -116,7 +116,7 @@ public class TalonModule{
 	//************** Pos/Vel/Acc Helper Methods **************// 
 	
 	public double getAngle(){
-		return absoluteAngleEncoder.get();
+		return rotationEncoder.get();
 	}
 
 	public double getDistance() {
@@ -146,7 +146,15 @@ public class TalonModule{
 
 		return filteredAccel;
 	}	
-	
+
+	public Encoder getSpeedEncoder(){
+		return this.speedEncoder;
+	}
+
+	public AnalogPotentiometer getRotationEncoder() {
+		return this.rotationEncoder;
+	}
+
 	public enum WheelPosition{
 		FRONT_RIGHT(0), FRONT_LEFT(1), BACK_LEFT(2), BACK_RIGHT(3);
 		

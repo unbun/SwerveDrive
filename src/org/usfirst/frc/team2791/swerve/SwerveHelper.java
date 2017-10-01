@@ -14,8 +14,8 @@ import edu.wpi.first.wpilibj.Joystick;
  */
 public class SwerveHelper {
 
-	public final static double WHEELBASE_LENGTH = 36.0/12.0; 
-	public final static double WHEELBASE_WIDTH = 28.0/12.0;
+	public final static double WHEELBASE_LENGTH = 36.0/12.0;  //based on 2791's robot Stoker from FRC SteamWorks
+	public final static double WHEELBASE_WIDTH = 28.0/12.0;   //based on 2791's robot Stoker from FRC SteamWorks
 
 	/*
 	 * Math Conventions:
