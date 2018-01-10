@@ -1,8 +1,6 @@
 package org.usfirst.frc.team2791.swerve;
 
 
-import org.usfirst.frc.team2791.util.ShakerGamepad;
-
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
@@ -26,18 +24,24 @@ public class ControlModule{
 
 	private PWMSpeedController m_rotation; 
 	private PWMSpeedController m_wheel; 
+	
 	private PIDController rotationPID;
+	
 	public double rotateP = 1.0;
 	public double rotateI = 0.0;
 	public double rotateD = 0.0;
-	private double rotatePIDTolerance = 0.01;
+	protected double rotatePIDTolerance = 0.01;
 
 	private AnalogPotentiometer rotationEncoder = null;
 	private Encoder speedEncoder = null;
 
-	private double previousRate = 0;
-	private double previousTime = 0;
-	private double filteredAccel = 0;
+	protected double previousRate = 0;
+	protected double previousTime = 0;
+	protected double filteredAccel = 0;
+	
+	protected ControlModule(WheelPosition pos) {
+		position = pos;
+	}
 
 	public ControlModule(PWMSpeedController rotation, PWMSpeedController wheel, int potentiometerPort, WheelPosition pos){
 		position = pos;
@@ -62,19 +66,6 @@ public class ControlModule{
 		rotationPID.setSetpoint(SwerveHelper.getAngleValue(drive, rotate, position.wheelNumber));
 	}
 
-	/**
-	 * If you have your own class for joystick Controllers, then just change the parameter type to your class.</br>
-	 * <i>However your controller will need to have the following methods from ShakerGamepad: <b>ShakerGamepad.getSwerveDriveSpeed(),
-	 * ShakerGamepad.getSwerveDriveStrafe(), and getSwerveDriveRotation() </b></i>
-	 * 
-	 * 
-	 * @param driver the gamepad controller for the driver.
-	 */
-	public void setSpeedAndAngle(ShakerGamepad driver){
-		m_wheel.set(SwerveHelper.getSpeedValue(driver, position.wheelNumber));
-		rotationPID.setSetpoint(SwerveHelper.getAngleValue(driver, position.wheelNumber));
-	}
-
 	public void setEncoder(int encoderPortA, int encoderPortB){
 		this.speedEncoder = new Encoder(encoderPortA, encoderPortB);
 	}
@@ -85,11 +76,12 @@ public class ControlModule{
 		rotatePIDTolerance = tolerance;
 		rotationPID.setAbsoluteTolerance(tolerance);
 	}
+	
 	public void setRotationPID(double kp, double ki, double kd){
 		rotationPID.setPID(kp, ki, kd);
 	}
 
-	public void setRotationPID(double kp, double ki, double kd, double kf){
+	public void setRotationPIDF(double kp, double ki, double kd, double kf){
 		rotationPID.setPID(kp, ki, kd, kf);
 	}
 
@@ -117,7 +109,9 @@ public class ControlModule{
 	//************** Pos/Vel/Acc Helper Methods **************// 
 
 	public double getAngle(){
-		return rotationEncoder.get();
+		if(rotationEncoder != null)
+			return rotationEncoder.get();
+		return -1.0;
 	}
 
 	public double getDistance() {
@@ -135,7 +129,7 @@ public class ControlModule{
 
 	public double getAcceleration() {
 
-		double currentRate = getVelocity();
+		double currentRate = this.getVelocity();
 		double currentTime = Timer.getFPGATimestamp();
 
 		double acceleration = (currentRate - previousRate) / (currentTime - previousTime);
@@ -149,11 +143,15 @@ public class ControlModule{
 	}	
 
 	public Encoder getSpeedEncoder(){
-		return this.speedEncoder;
+		if(speedEncoder != null) 
+			return this.speedEncoder;
+		return null;
 	}
 
 	public AnalogPotentiometer getRotationEncoder() {
-		return this.rotationEncoder;
+		if(rotationEncoder != null)
+			return this.rotationEncoder;
+		return null;
 	}
 	
 	public void debug() {

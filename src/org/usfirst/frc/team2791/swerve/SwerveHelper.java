@@ -1,7 +1,5 @@
 package org.usfirst.frc.team2791.swerve;
 
-import org.usfirst.frc.team2791.util.ShakerGamepad;
-
 import edu.wpi.first.wpilibj.GyroBase;
 import edu.wpi.first.wpilibj.Joystick;
 
@@ -14,8 +12,8 @@ import edu.wpi.first.wpilibj.Joystick;
  */
 public class SwerveHelper {
 
-	public final static double WHEELBASE_LENGTH = 36.0/12.0;  //based on 2791's robot Stoker from FRC SteamWorks
-	public final static double WHEELBASE_WIDTH = 28.0/12.0;   //based on 2791's robot Stoker from FRC SteamWorks
+	public static double WHEELBASE_LENGTH = 36.0/12.0;  //based on 2791's robot Stoker from FRC SteamWorks
+	public static double WHEELBASE_WIDTH = 28.0/12.0;   //based on 2791's robot Stoker from FRC SteamWorks
 
 	/*
 	 * Math Conventions:
@@ -42,6 +40,19 @@ public class SwerveHelper {
 	public static boolean useAngleToReverse = true;
 
 
+	public static void setRobotDimensions(double length, double width) {
+		WHEELBASE_LENGTH = length;
+		WHEELBASE_WIDTH = width; 
+	}
+	
+	/**
+	 * 
+	 * @return {wheelbase length, wheelbase width}
+	 */
+	public static double[] getRobotDimensions() {		
+		return new double[] {WHEELBASE_LENGTH, WHEELBASE_WIDTH};
+	}
+	
 	public static double getSpeedValue(Joystick drive, Joystick rotate, int wheelID){
 		calculate(drive.getY(), drive.getX(), rotate.getX());
 		return wheelSpeed[wheelID];
@@ -49,16 +60,6 @@ public class SwerveHelper {
 
 	public static double getAngleValue(Joystick drive, Joystick rotate,  int wheelID){
 		calculate(drive.getY(), drive.getX(), rotate.getX());
-		return wheelAngle[wheelID];
-	}	
-
-	public static double getSpeedValue(ShakerGamepad input, int wheelID){
-		calculate(input.getSwerveDriveSpeed(), input.getSwerveDriveStrafe(), input.getSwerveDriveRotation());
-		return wheelSpeed[wheelID];
-	}
-
-	public static double getAngleValue(ShakerGamepad input,  int wheelID){
-		calculate(input.getSwerveDriveSpeed(), input.getSwerveDriveStrafe(), input.getSwerveDriveRotation());
 		return wheelAngle[wheelID];
 	}	
 
