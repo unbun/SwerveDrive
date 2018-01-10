@@ -27,7 +27,7 @@ public class SwerveHelper {
 	 * 2 = rear_left;
 	 * 3 = rear_right;
 	 * 
-	 * Zero degrees is the wheels facing forward
+	 * 0.0 degrees is the wheels facing the front of the bot
 	 * 
 	 */
 	

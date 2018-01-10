@@ -7,24 +7,25 @@ import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PIDController;
-import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.PWMSpeedController;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
- * A TalonModule allows you to easily control the speed controllers for 
+ * A ControlModule allows you to easily control the speed controllers for 
  * both rotation and speed</br>
  * The rotation speed controller has a PIDController with an potentiometer source. 
  * <i>(TODO: setup an option to use absolute encoders in place of rotation potentiometers)</i></br>
+ * <i>(TODO:Create a TalonSRXModule based on this)</i></br>
  * 
  * @author created by Unnas Hussain on 8/2/2017
  */
-public class TalonModule{
-		
-	public WheelPosition wheelTag;
-	
-	private Talon rotation; //if you aren't using CTRE Talons and are having calibration issues, try using the PWMSpeedController object instead
-	private Talon wheel; //if you aren't using CTRE Talons and are having calibration issues, try using the PWMSpeedController object instead
+public class ControlModule{
 
+	public WheelPosition position;
+
+	private PWMSpeedController m_rotation; 
+	private PWMSpeedController m_wheel; 
 	private PIDController rotationPID;
 	public double rotateP = 1.0;
 	public double rotateI = 0.0;
@@ -38,48 +39,48 @@ public class TalonModule{
 	private double previousTime = 0;
 	private double filteredAccel = 0;
 
-	public TalonModule(int rotationPort, int wheelPort, int potentiometerPort, WheelPosition location){
-		wheelTag = location;
-		
-		rotation = new Talon(rotationPort);
-		wheel = new Talon(wheelPort);
+	public ControlModule(PWMSpeedController rotation, PWMSpeedController wheel, int potentiometerPort, WheelPosition pos){
+		position = pos;
+
+		m_rotation = rotation;
+		m_wheel = wheel;
 		rotationEncoder = new AnalogPotentiometer(potentiometerPort, 360.0, 0);
 
-		rotationPID = new PIDController(rotateP, rotateI, rotateD, rotationEncoder, rotation);
-		
+		rotationPID = new PIDController(rotateP, rotateI, rotateD, rotationEncoder, m_rotation);
+
 		rotationPID.setContinuous();
 		rotationPID.setAbsoluteTolerance(rotatePIDTolerance);
 	}
-	
-	public TalonModule(int rotationPort, int wheelPort, int encoderPort, int wheelEncoderA, int wheelEncoderB, WheelPosition location){
-		this(rotationPort, wheelPort, encoderPort, location);
+
+	public ControlModule(PWMSpeedController rotation, PWMSpeedController wheel, int encoderPort, int wheelEncoderA, int wheelEncoderB, WheelPosition location){
+		this(rotation, wheel, encoderPort, location);
 		speedEncoder = new Encoder(wheelEncoderA, wheelEncoderB);
 	}
 
 	public void setSpeedAndAngle(Joystick drive, Joystick rotate){
-		wheel.set(SwerveHelper.getSpeedValue(drive, rotate, wheelTag.wheelNumber));
-		rotationPID.setSetpoint(SwerveHelper.getAngleValue(drive, rotate, wheelTag.wheelNumber));
+		m_wheel.set(SwerveHelper.getSpeedValue(drive, rotate, position.wheelNumber));
+		rotationPID.setSetpoint(SwerveHelper.getAngleValue(drive, rotate, position.wheelNumber));
 	}
-	
+
 	/**
 	 * If you have your own class for joystick Controllers, then just change the parameter type to your class.</br>
 	 * <i>However your controller will need to have the following methods from ShakerGamepad: <b>ShakerGamepad.getSwerveDriveSpeed(),
-	 * ShakerGamepad.getSwerveDriveStrafe(), and get SwerveDriveRotation() </b></i>
+	 * ShakerGamepad.getSwerveDriveStrafe(), and getSwerveDriveRotation() </b></i>
 	 * 
 	 * 
 	 * @param driver the gamepad controller for the driver.
 	 */
 	public void setSpeedAndAngle(ShakerGamepad driver){
-		wheel.set(SwerveHelper.getSpeedValue(driver, wheelTag.wheelNumber));
-		rotationPID.setSetpoint(SwerveHelper.getAngleValue(driver, wheelTag.wheelNumber));
+		m_wheel.set(SwerveHelper.getSpeedValue(driver, position.wheelNumber));
+		rotationPID.setSetpoint(SwerveHelper.getAngleValue(driver, position.wheelNumber));
 	}
-	
+
 	public void setEncoder(int encoderPortA, int encoderPortB){
 		this.speedEncoder = new Encoder(encoderPortA, encoderPortB);
 	}
 
 	//*********************PID Helper Methods******************//
-	
+
 	public void setRotationPIDTolerance(double tolerance) {
 		rotatePIDTolerance = tolerance;
 		rotationPID.setAbsoluteTolerance(tolerance);
@@ -95,26 +96,26 @@ public class TalonModule{
 	public double getRotationP(){
 		return rotationPID.getP();
 	}
-	
+
 	public double getRotationI(){
 		return rotationPID.getI();
 	}
-	
+
 	public double getRotationD(){
 		return rotationPID.getD();
 	}
-	
+
 	public double getRotationF(){
 		return rotationPID.getF();
 	}
-	
+
 	public void resetSpeedEncoder(){
 		if(speedEncoder != null)
 			this.speedEncoder.reset();
 	}
-	
+
 	//************** Pos/Vel/Acc Helper Methods **************// 
-	
+
 	public double getAngle(){
 		return rotationEncoder.get();
 	}
@@ -132,7 +133,7 @@ public class TalonModule{
 
 	}
 
-	public double getRightAcceleration() {
+	public double getAcceleration() {
 
 		double currentRate = getVelocity();
 		double currentTime = Timer.getFPGATimestamp();
@@ -154,16 +155,37 @@ public class TalonModule{
 	public AnalogPotentiometer getRotationEncoder() {
 		return this.rotationEncoder;
 	}
+	
+	public void debug() {
+		String name = position.toString() + " ControlModule/";
+		
+		SmartDashboard.putNumber(name + "Distance", this.getDistance());
+		SmartDashboard.putNumber(name + "Velocity", this.getVelocity());
+		SmartDashboard.putNumber(name + "Acceleration", this.getAcceleration());
+		
+		SmartDashboard.putNumber(name + "Spin P", this.getRotationP());
+		SmartDashboard.putNumber(name + "Spin I", this.getRotationI());
+		SmartDashboard.putNumber(name + "Spin D", this.getRotationD());
+		SmartDashboard.putNumber(name + "Spin F", this.getRotationF());
+	}
 
 	public enum WheelPosition{
 		FRONT_RIGHT(0), FRONT_LEFT(1), BACK_LEFT(2), BACK_RIGHT(3);
-		
+
 		public int wheelNumber;
-		
+
 		WheelPosition(int id){
 			wheelNumber = id;
 		}
+
+		public String toString() {
+			switch(wheelNumber) {
+			case 0: return "FRONT_RIGHT";
+			case 1: return "FRONT_LEFT";
+			case 2: return "BACK_LEFT";
+			case 3: return "BACK_RIGHT";
+			default: return "???";
+			}
+		}
 	}
-
-
 }
